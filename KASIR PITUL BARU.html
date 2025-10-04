@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Kasir - Pitulungan v2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- jsPDF Libraries for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: 'Comfortaa', cursive;
+        }
+        .title-font {
+            font-family: 'Comfortaa', cursive;
+            font-weight: 700; /* Bolder weight for the title */
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #63b3ed; /* Darker Blue */
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #4299e1; /* Even Darker Blue */
+        }
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        
+        /* Ocean Animation */
+        .ocean {
+            height: 120px;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            overflow: hidden;
+            z-index: 0;
+        }
+        .wave {
+            background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 88.7'%3e%3cpath d='M800 56.9c-155.5 0-204.9-50.3-400-50.3-204.9 0-244.5 50.3-400 50.3v31.8h800v-.2-31.6z' fill='%234299e1'/%3e%3c/svg%3e");
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            animation: wave 10s -3s linear infinite;
+            transform: translate3d(0, 0, 0);
+            opacity: 0.8;
+            bottom: 0;
+        }
+        .wave:nth-of-type(2) {
+            bottom: 0;
+            animation: wave 18s linear reverse infinite;
+            opacity: 0.5;
+        }
+        @keyframes wave {
+            0% {transform: translateX(0);}
+            100% {transform: translateX(-50%);}
+        }
+        .main-container {
+            position: relative;
+            z-index: 10;
+            padding-bottom: 120px; /* Add padding to prevent content from being hidden by waves */
+        }
+        .flower-ornament {
+            width: 50px; /* Increased size */
+            height: 50px; /* Increased size */
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body class="bg-blue-50 text-gray-800">
+
+    <!-- Ocean Animation Background -->
+    <div class="ocean">
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+
+    <div class="main-container container mx-auto p-4 lg:p-8">
+        <header class="text-center mb-8">
+            <div class="flex justify-center items-center gap-3">
+                <svg class="flower-ornament text-blue-800" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path fill-rule="evenodd" d="M11.23 4.403C11.69 3.555 12.31 3.555 12.77 4.403L13.89 6.626C13.99 6.824 14.19 6.95 14.41 6.95H16.83C17.75 6.95 18.15 8.11 17.44 8.642L15.42 10.04C15.25 10.16 15.18 10.39 15.27 10.58L16.38 12.803C16.85 13.65 15.88 14.39 15.17 13.858L13.15 12.46C12.98 12.34 12.75 12.34 12.58 12.46L10.56 13.858C9.85 14.39 8.88 13.65 9.35 12.803L10.46 10.58C10.55 10.39 10.48 10.16 10.31 10.04L8.29 8.642C7.58 8.11 7.98 6.95 8.9 6.95H11.32C11.54 6.95 11.74 6.824 11.84 6.626L11.23 4.403Z" clip-rule="evenodd" />
+                    <path d="M4.502 15.436C5.46 15.038 6.53 15.34 7.15 16.142L7.549 16.67C7.86 17.09 8.44 17.22 8.91 16.94L10.3 16.1C10.76 15.82 11.36 15.93 11.7 16.34L12.01 16.7C12.31 17.08 12.92 17.08 13.22 16.7L13.53 16.34C13.87 15.93 14.47 15.82 14.93 16.1L16.32 16.94C16.79 17.22 17.37 17.09 17.68 16.67L18.08 16.142C18.7 15.34 19.77 15.038 20.73 15.436C21.68 15.833 22.13 16.9 21.62 17.794L21.503 18.01C20.99 18.904 19.9 19.34 18.95 18.943C17.99 18.545 16.92 18.847 16.3 19.648L15.9 20.18C15.59 20.6 15.01 20.73 14.54 20.45L13.15 19.61C12.69 19.33 12.09 19.44 11.75 19.85L11.44 20.21C11.14 20.59 10.53 20.59 10.23 20.21L9.92 19.85C9.58 19.44 8.98 19.33 8.52 19.61L7.13 20.45C6.66 20.73 6.08 20.6 5.77 20.18L5.37 19.648C4.75 18.847 3.68 18.545 2.72 18.943C1.77 19.34 0.86 18.904 0.74 18.01L0.62 17.794C0.11 16.9 0.56 15.833 1.51 15.436H4.502Z" />
+                </svg>
+                <h1 class="text-4xl md:text-5xl title-font text-blue-900">pitulungan</h1>
+                 <svg class="flower-ornament text-blue-800 transform scale-x-[-1]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path fill-rule="evenodd" d="M11.23 4.403C11.69 3.555 12.31 3.555 12.77 4.403L13.89 6.626C13.99 6.824 14.19 6.95 14.41 6.95H16.83C17.75 6.95 18.15 8.11 17.44 8.642L15.42 10.04C15.25 10.16 15.18 10.39 15.27 10.58L16.38 12.803C16.85 13.65 15.88 14.39 15.17 13.858L13.15 12.46C12.98 12.34 12.75 12.34 12.58 12.46L10.56 13.858C9.85 14.39 8.88 13.65 9.35 12.803L10.46 10.58C10.55 10.39 10.48 10.16 10.31 10.04L8.29 8.642C7.58 8.11 7.98 6.95 8.9 6.95H11.32C11.54 6.95 11.74 6.824 11.84 6.626L11.23 4.403Z" clip-rule="evenodd" />
+                    <path d="M4.502 15.436C5.46 15.038 6.53 15.34 7.15 16.142L7.549 16.67C7.86 17.09 8.44 17.22 8.91 16.94L10.3 16.1C10.76 15.82 11.36 15.93 11.7 16.34L12.01 16.7C12.31 17.08 12.92 17.08 13.22 16.7L13.53 16.34C13.87 15.93 14.47 15.82 14.93 16.1L16.32 16.94C16.79 17.22 17.37 17.09 17.68 16.67L18.08 16.142C18.7 15.34 19.77 15.038 20.73 15.436C21.68 15.833 22.13 16.9 21.62 17.794L21.503 18.01C20.99 18.904 19.9 19.34 18.95 18.943C17.99 18.545 16.92 18.847 16.3 19.648L15.9 20.18C15.59 20.6 15.01 20.73 14.54 20.45L13.15 19.61C12.69 19.33 12.09 19.44 11.75 19.85L11.44 20.21C11.14 20.59 10.53 20.59 10.23 20.21L9.92 19.85C9.58 19.44 8.98 19.33 8.52 19.61L7.13 20.45C6.66 20.73 6.08 20.6 5.77 20.18L5.37 19.648C4.75 18.847 3.68 18.545 2.72 18.943C1.77 19.34 0.86 18.904 0.74 18.01L0.62 17.794C0.11 16.9 0.56 15.833 1.51 15.436H4.502Z" />
+                </svg>
+            </div>
+            <p class="text-gray-600 mt-2">sugih sugih sugih berkah</p>
+            <div id="datetime-container" class="mt-4 text-gray-500 bg-white/50 backdrop-blur-sm rounded-full inline-block px-4 py-2">
+                <span id="date-display"></span> | <span id="time-display"></span>
+            </div>
+            <div id="cashier-info" class="mt-2 text-gray-600">
+                <span>Kasir Bertugas: <span id="cashier-name-display" class="font-semibold">...</span></span>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-2 bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
+                <h2 class="text-2xl font-bold mb-6 text-blue-800 border-b-2 border-blue-300 pb-2">Daftar Menu</h2>
+                <div id="menu-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    <!-- Menu items will be injected here by JavaScript -->
+                </div>
+            </div>
+
+            <div class="lg:col-span-1 space-y-8">
+                <div class="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-bold mb-4 text-blue-800">Pesanan Saat Ini</h2>
+                    <div id="order-items-container" class="space-y-3 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+                        <p id="empty-cart-message" class="text-gray-500 text-center py-4">Keranjang masih kosong.</p>
+                    </div>
+                    <div class="border-t-2 border-blue-300 mt-4 pt-4">
+                        <div class="flex justify-between items-center text-xl font-bold text-gray-800">
+                            <span>Total:</span>
+                            <span id="total-price">Rp 0</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mt-6">
+                        <button id="clear-order-btn" class="w-full bg-red-400 hover:bg-red-500 text-white font-semibold py-2 px-4 rounded-lg transition-transform transform active:scale-95">
+                            Batal
+                        </button>
+                        <button id="process-payment-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-transform transform active:scale-95">
+                            Bayar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
+                    <div class="flex justify-between items-center mb-4">
+                         <h2 class="text-2xl font-bold text-blue-800">Pemasukan Hari Ini</h2>
+                         <button id="save-pdf-btn" title="Simpan sebagai PDF" class="bg-sky-500 hover:bg-sky-600 text-white font-bold p-2 rounded-full transition-transform transform active:scale-95">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6 12a1 1 0 100 2h8a1 1 0 100-2H6zM6 7a1 1 0 000 2h8a1 1 0 100-2H6zM3 3a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                            </svg>
+                         </button>
+                    </div>
+                    <div id="daily-income-details" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-2 text-sm">
+                    </div>
+                    <div class="border-t-2 border-blue-300 mt-4 pt-4">
+                        <div class="flex justify-between items-center text-lg font-bold text-gray-800">
+                            <span>Total Pemasukan:</span>
+                            <span id="daily-total-income">Rp 0</span>
+                        </div>
+                    </div>
+                     <button id="reset-income-btn" class="w-full mt-4 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-transform transform active:scale-95">
+                        Reset Data Pemasukan
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 transform scale-95 transition-transform">
+            <h2 class="text-2xl font-bold text-center mb-4 text-blue-800">Pembayaran</h2>
+            <div class="text-center mb-4">
+                <p class="text-gray-600">Total Tagihan</p>
+                <p id="modal-total-price" class="text-4xl font-bold text-gray-800">Rp 0</p>
+            </div>
+            <div class="mb-4">
+                <label class="font-semibold mb-2 block">Metode Pembayaran:</label>
+                <div class="flex gap-4">
+                    <button id="pay-cash-btn" class="flex-1 bg-blue-500 text-white p-3 rounded-lg font-semibold">Cash</button>
+                    <button id="pay-cashless-btn" class="flex-1 bg-teal-500 text-white p-3 rounded-lg font-semibold">Cashless</button>
+                </div>
+            </div>
+            <div id="cash-payment-section" class="hidden mt-4">
+                <label for="cash-amount" class="font-semibold mb-2 block">Uang Diterima (Rp):</label>
+                <input type="number" id="cash-amount" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg text-right" placeholder="0">
+                <div class="flex justify-between mt-3 text-lg">
+                    <span>Kembalian:</span>
+                    <span id="change-amount" class="font-bold">Rp 0</span>
+                </div>
+            </div>
+            <div class="mt-6 grid grid-cols-2 gap-3">
+                 <button id="cancel-payment-btn" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-3 px-4 rounded-lg">Tutup</button>
+                 <button id="confirm-payment-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg" disabled>Konfirmasi</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { jsPDF } = window.jspdf;
+            
+            // --- IndexedDB Database Setup ---
+            let db;
+            function initDB() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open("PitulunganKasirDB", 2);
+
+                    request.onupgradeneeded = event => {
+                        const db = event.target.result;
+                        if (!db.objectStoreNames.contains('transactions')) {
+                           const transactionStore = db.createObjectStore('transactions', { keyPath: 'id', autoIncrement: true });
+                           transactionStore.createIndex('date_index', 'date', { unique: false });
+                        }
+                        if (!db.objectStoreNames.contains('daily_info')) {
+                            db.createObjectStore('daily_info', { keyPath: 'date' });
+                        }
+                    };
+
+                    request.onsuccess = event => {
+                        db = event.target.result;
+                        console.log("Database successfully opened.");
+                        resolve(db);
+                    };
+
+                    request.onerror = event => {
+                        console.error("Database error: ", event.target.error);
+                        reject(event.target.error);
+                    };
+                });
+            }
+
+            try {
+                db = await initDB();
+            } catch (error) {
+                alert('Gagal memuat database. Aplikasi mungkin tidak berfungsi dengan benar.');
+                return;
+            }
+
+
+            const menu = [
+                { category: 'Coffee', name: 'Kapisa', price: 20000 }, { category: 'Coffee', name: 'Gaura', price: 22000 }, { category: 'Coffee', name: 'Americano', price: 15000 }, { category: 'Coffee', name: 'Espresso', price: 13000 }, { category: 'V60/Japanese', name: 'Basic', price: 18000 }, { category: 'V60/Japanese', name: 'Special', price: 25000 }, { category: 'Coffee', name: 'Tubruk', price: 10000 }, { category: 'Coffee', name: 'Vietnam Drip', price: 15000 }, { category: 'Other', name: 'Udyana', price: 24000 }, { category: 'Other', name: 'Matcha', price: 20000 }, { category: 'Other', name: 'Chamomile', price: 16000 }, { category: 'Other', name: 'Jasmine Tea', price: 10000 }, { category: 'Other', name: 'Jahe Rempah', price: 12000 }, { category: 'Makanan', name: 'Nasi Telur Sayur', price: 12000 }, { category: 'Makanan', name: 'Platter', price: 18000 }, { category: 'Makanan', name: 'Kentang Goreng', price: 15000 },
+            ];
+
+            let currentOrder = [];
+            let paymentMethod = null;
+            
+            // --- Element Selectors ---
+            const dateDisplay = document.getElementById('date-display');
+            const timeDisplay = document.getElementById('time-display');
+            const cashierNameDisplay = document.getElementById('cashier-name-display');
+            const menuContainer = document.getElementById('menu-container');
+            const orderItemsContainer = document.getElementById('order-items-container');
+            const emptyCartMessage = document.getElementById('empty-cart-message');
+            const totalPriceEl = document.getElementById('total-price');
+            const processPaymentBtn = document.getElementById('process-payment-btn');
+            const clearOrderBtn = document.getElementById('clear-order-btn');
+            const dailyIncomeDetailsEl = document.getElementById('daily-income-details');
+            const dailyTotalIncomeEl = document.getElementById('daily-total-income');
+            const resetIncomeBtn = document.getElementById('reset-income-btn');
+            const savePdfBtn = document.getElementById('save-pdf-btn');
+            
+            // Modal Elements
+            const paymentModal = document.getElementById('payment-modal');
+            const modalTotalPrice = document.getElementById('modal-total-price');
+            const payCashBtn = document.getElementById('pay-cash-btn');
+            const payCashlessBtn = document.getElementById('pay-cashless-btn');
+            const cashPaymentSection = document.getElementById('cash-payment-section');
+            const cashAmountInput = document.getElementById('cash-amount');
+            const changeAmountEl = document.getElementById('change-amount');
+            const cancelPaymentBtn = document.getElementById('cancel-payment-btn');
+            const confirmPaymentBtn = document.getElementById('confirm-payment-btn');
+
+            // --- Utility Functions ---
+            const formatCurrency = (amount) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+            
+            const getTodayDateString = () => {
+                const today = new Date();
+                return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            };
+
+            // --- Date & Time ---
+            const updateDateTime = () => {
+                const now = new Date();
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                dateDisplay.textContent = now.toLocaleDateString('id-ID', options);
+                timeDisplay.textContent = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit'});
+            };
+
+            // --- Cashier Logic ---
+            const setupCashier = async () => {
+                const today = getTodayDateString();
+                const tx = db.transaction('daily_info', 'readwrite');
+                const store = tx.objectStore('daily_info');
+                let info = await new Promise(resolve => store.get(today).onsuccess = e => resolve(e.target.result));
+
+                if (!info || !info.cashierName) {
+                    const cashierName = prompt("Selamat Datang! Masukkan nama kasir yang bertugas hari ini:", "");
+                    const nameToStore = (cashierName && cashierName.trim() !== '') ? cashierName : "N/A";
+                    info = { date: today, cashierName: nameToStore };
+                    await new Promise(resolve => store.put(info).onsuccess = resolve);
+                }
+                
+                cashierNameDisplay.textContent = info.cashierName;
+            };
+
+            // --- Core Application Logic ---
+            const renderMenu = () => {
+                menuContainer.innerHTML = '';
+                menu.forEach(item => {
+                    const menuItem = document.createElement('div');
+                    menuItem.className = 'bg-white p-3 rounded-lg shadow-md hover:shadow-xl hover:scale-105 transition-all cursor-pointer flex flex-col justify-between';
+                    menuItem.innerHTML = `<h3 class="font-semibold text-gray-700">${item.name}</h3><p class="text-sm text-blue-700">${formatCurrency(item.price)}</p>`;
+                    menuItem.addEventListener('click', () => addItemToOrder(item));
+                    menuContainer.appendChild(menuItem);
+                });
+            };
+
+            const addItemToOrder = (item) => {
+                const existingItem = currentOrder.find(orderItem => orderItem.name === item.name);
+                if (existingItem) existingItem.quantity++;
+                else currentOrder.push({ ...item, quantity: 1 });
+                updateOrderDisplay();
+            };
+            
+            const removeItemFromOrder = (itemName) => {
+                const itemIndex = currentOrder.findIndex(orderItem => orderItem.name === itemName);
+                if (itemIndex > -1) {
+                    currentOrder[itemIndex].quantity--;
+                    if (currentOrder[itemIndex].quantity === 0) currentOrder.splice(itemIndex, 1);
+                }
+                updateOrderDisplay();
+            };
+
+            const updateOrderDisplay = () => {
+                orderItemsContainer.innerHTML = '';
+                if (currentOrder.length === 0) {
+                    orderItemsContainer.appendChild(emptyCartMessage);
+                    emptyCartMessage.style.display = 'block';
+                } else {
+                    emptyCartMessage.style.display = 'none';
+                    currentOrder.forEach(item => {
+                        const orderItemEl = document.createElement('div');
+                        orderItemEl.className = 'flex justify-between items-center bg-blue-200/50 p-2 rounded-md text-sm';
+                        orderItemEl.innerHTML = `<div><span class="font-semibold">${item.name}</span> <span class="text-gray-600">x ${item.quantity}</span></div><div class="flex items-center gap-2"><span class="font-medium">${formatCurrency(item.price * item.quantity)}</span><button data-name="${item.name}" class="remove-item-btn bg-red-300 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs pb-0.5">-</button></div>`;
+                        orderItemsContainer.appendChild(orderItemEl);
+                    });
+                }
+                
+                document.querySelectorAll('.remove-item-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => removeItemFromOrder(e.target.dataset.name));
+                });
+                calculateTotal();
+            };
+
+            const calculateTotal = () => {
+                const total = currentOrder.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                totalPriceEl.textContent = formatCurrency(total);
+                return total;
+            };
+
+            const clearOrder = () => {
+                currentOrder = [];
+                updateOrderDisplay();
+            };
+
+            const saveTransaction = async () => {
+                if (currentOrder.length === 0) return;
+                
+                const newTransaction = {
+                    date: getTodayDateString(),
+                    time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                    items: currentOrder,
+                    total: calculateTotal(),
+                    paymentMethod: paymentMethod
+                };
+
+                const tx = db.transaction('transactions', 'readwrite');
+                const store = tx.objectStore('transactions');
+                await new Promise(resolve => store.add(newTransaction).onsuccess = resolve);
+                
+                clearOrder();
+                await loadDailyIncome();
+                closePaymentModal();
+            };
+            
+            const loadDailyIncome = async () => {
+                const today = getTodayDateString();
+                const tx = db.transaction('transactions', 'readonly');
+                const store = tx.objectStore('transactions');
+                const index = store.index('date_index');
+                const dailyTransactions = await new Promise(resolve => index.getAll(today).onsuccess = e => resolve(e.target.result));
+                
+                dailyIncomeDetailsEl.innerHTML = '';
+                
+                if (dailyTransactions.length === 0) {
+                    dailyIncomeDetailsEl.innerHTML = `<p class="text-gray-500 text-center py-2">Belum ada pemasukan.</p>`;
+                } else {
+                    dailyTransactions.slice().reverse().forEach(trans => {
+                        const transactionEl = document.createElement('div');
+                        transactionEl.className = 'bg-green-100/50 p-2 rounded-md';
+                        let itemsSummary = trans.items.map(i => `${i.name} x${i.quantity}`).join(', ');
+                        transactionEl.innerHTML = `<div class="flex justify-between font-semibold"><span>${trans.time} - <span class="capitalize font-normal">${trans.paymentMethod}</span></span><span>${formatCurrency(trans.total)}</span></div><p class="text-xs text-gray-600 truncate">${itemsSummary}</p>`;
+                        dailyIncomeDetailsEl.appendChild(transactionEl);
+                    });
+                }
+                
+                const totalIncome = dailyTransactions.reduce((sum, trans) => sum + trans.total, 0);
+                dailyTotalIncomeEl.textContent = formatCurrency(totalIncome);
+            };
+
+            const resetDailyIncome = async () => {
+                if(confirm('Apakah Anda yakin ingin menghapus semua data pemasukan dan nama kasir hari ini? Tindakan ini tidak dapat dibatalkan.')) {
+                    const today = getTodayDateString();
+                    
+                    // Delete transactions
+                    const transTx = db.transaction('transactions', 'readwrite');
+                    const transStore = transTx.objectStore('transactions');
+                    const transIndex = transStore.index('date_index');
+                    const keysReq = transIndex.getAllKeys(today);
+                    keysReq.onsuccess = () => {
+                        keysReq.result.forEach(key => transStore.delete(key));
+                    };
+
+                    // Delete cashier info
+                    const infoTx = db.transaction('daily_info', 'readwrite');
+                    await new Promise(resolve => infoTx.objectStore('daily_info').delete(today).onsuccess = resolve);
+                    
+                    await loadDailyIncome(); 
+                    await setupCashier(); 
+                }
+            };
+            
+            // --- Modal Logic (unchanged from previous version) ---
+            const openPaymentModal = () => {
+                if (currentOrder.length === 0) {
+                    alert("Keranjang masih kosong!");
+                    return;
+                }
+                const total = calculateTotal();
+                modalTotalPrice.textContent = formatCurrency(total);
+                paymentModal.classList.remove('opacity-0', 'pointer-events-none');
+                paymentModal.querySelector('div').classList.remove('scale-95');
+            };
+
+            const closePaymentModal = () => {
+                paymentModal.classList.add('opacity-0', 'pointer-events-none');
+                paymentModal.querySelector('div').classList.add('scale-95');
+                cashPaymentSection.classList.add('hidden');
+                cashAmountInput.value = '';
+                changeAmountEl.textContent = formatCurrency(0);
+                payCashBtn.classList.remove('ring-4', 'ring-blue-300');
+                payCashlessBtn.classList.remove('ring-4', 'ring-teal-300');
+                confirmPaymentBtn.disabled = true;
+                paymentMethod = null;
+            };
+
+            const calculateChange = () => {
+                const total = calculateTotal();
+                const cashAmount = parseFloat(cashAmountInput.value) || 0;
+                const change = cashAmount - total;
+                changeAmountEl.textContent = formatCurrency(Math.max(0, change));
+                confirmPaymentBtn.disabled = cashAmount < total;
+            };
+            
+            // --- PDF Generation ---
+            const generatePDF = async () => {
+                const today = getTodayDateString();
+                const transTx = db.transaction('transactions', 'readonly');
+                const transStore = transTx.objectStore('transactions');
+                const transIndex = transStore.index('date_index');
+                const dailyTransactions = await new Promise(resolve => transIndex.getAll(today).onsuccess = e => resolve(e.target.result));
+
+                const infoTx = db.transaction('daily_info', 'readonly');
+                const infoStore = infoTx.objectStore('daily_info');
+                const info = await new Promise(resolve => infoStore.get(today).onsuccess = e => resolve(e.target.result));
+                const cashierName = info ? info.cashierName : "N/A";
+                
+                if (dailyTransactions.length === 0) {
+                    alert("Tidak ada data pemasukan untuk disimpan.");
+                    return;
+                }
+                
+                const doc = new jsPDF();
+                const todayFormatted = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                
+                doc.setFontSize(18);
+                doc.text("Laporan Pemasukan Harian - Pitulungan", 14, 22);
+                doc.setFontSize(12);
+                doc.text(todayFormatted, 14, 30);
+                doc.text(`Kasir Bertugas: ${cashierName}`, 14, 36);
+                
+                const tableColumn = ["Waktu", "Item", "Metode", "Total"];
+                const tableRows = [];
+
+                dailyTransactions.forEach(trans => {
+                    const itemsString = trans.items.map(i => `${i.name} (x${i.quantity})`).join("\n");
+                    const transactionData = [ trans.time, itemsString, trans.paymentMethod, formatCurrency(trans.total) ];
+                    tableRows.push(transactionData);
+                });
+                
+                const totalIncome = dailyTransactions.reduce((sum, trans) => sum + trans.total, 0);
+                const summaryRow = [
+                    { content: "TOTAL PEMASUKAN", colSpan: 3, styles: { halign: 'right', fontStyle: 'bold' } },
+                    { content: formatCurrency(totalIncome), styles: { halign: 'left', fontStyle: 'bold' } }
+                ];
+                tableRows.push(summaryRow);
+
+                doc.autoTable({
+                    head: [tableColumn],
+                    body: tableRows,
+                    startY: 44,
+                    theme: 'grid',
+                    headStyles: { fillColor: [66, 153, 225] },
+                    styles: { cellPadding: 2, fontSize: 8 },
+                    columnStyles: { 3: { halign: 'left' } }
+                });
+
+                const dateForFilename = new Date().toISOString().slice(0, 10);
+                doc.save(`laporan-pitulungan-${dateForFilename}.pdf`);
+            };
+
+            // --- Event Listeners ---
+            processPaymentBtn.addEventListener('click', openPaymentModal);
+            clearOrderBtn.addEventListener('click', clearOrder);
+            resetIncomeBtn.addEventListener('click', resetDailyIncome);
+            savePdfBtn.addEventListener('click', generatePDF);
+            
+            // Modal event listeners
+            cancelPaymentBtn.addEventListener('click', closePaymentModal);
+            payCashBtn.addEventListener('click', () => {
+                paymentMethod = 'cash';
+                cashPaymentSection.classList.remove('hidden');
+                payCashBtn.classList.add('ring-4', 'ring-blue-300');
+                payCashlessBtn.classList.remove('ring-4', 'ring-teal-300');
+                cashAmountInput.focus();
+                calculateChange();
+            });
+            payCashlessBtn.addEventListener('click', () => {
+                paymentMethod = 'cashless';
+                cashPaymentSection.classList.add('hidden');
+                payCashlessBtn.classList.add('ring-4', 'ring-teal-300');
+                payCashBtn.classList.remove('ring-4', 'ring-blue-300');
+                cashAmountInput.value = '';
+                confirmPaymentBtn.disabled = false;
+            });
+            cashAmountInput.addEventListener('input', calculateChange);
+            confirmPaymentBtn.addEventListener('click', saveTransaction);
+
+            // --- Initialization ---
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            renderMenu();
+            updateOrderDisplay();
+            await setupCashier();
+            await loadDailyIncome();
+        });
+    </script>
+</body>
+</html>
+
